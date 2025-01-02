@@ -1,9 +1,7 @@
 package com.craftly.parser.controller;
 
-import com.craftly.parser.service.CSVGenerationService;
+import com.craftly.parser.service.ExcelGenerationService;
 import com.craftly.parser.service.YoutubeService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -21,31 +19,40 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/youtube")
 public class YoutubeController {
     private final YoutubeService youTubeService;
-    private final CSVGenerationService csvGenerationService;
+    private final ExcelGenerationService excelGenerationService;
 
-    public YoutubeController(YoutubeService youTubeService, CSVGenerationService csvGenerationService) {
+    public YoutubeController(YoutubeService youTubeService, ExcelGenerationService excelGenerationService) {
         this.youTubeService = youTubeService;
-        this.csvGenerationService = csvGenerationService;
+        this.excelGenerationService = excelGenerationService;
     }
 
-    @GetMapping("/youtube")
-    public ResponseEntity<Resource> getVideos(
+    @GetMapping
+    public ResponseEntity<List<Map<String, String>>> getVideos(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "10") int maxResults
+    ) {
+        return ResponseEntity.ok(youTubeService.searchVideosWithStats(query, maxResults));
+    }
+
+    @GetMapping("/excel")
+    public ResponseEntity<Resource> getVideosExcel(
             @RequestParam String query,
             @RequestParam(defaultValue = "10") int maxResults
     ) throws IOException {
-        List<Map<String, String>> videos = youTubeService.searchVideosWithStats(query, maxResults);
+        var videos = youTubeService.searchVideosWithStats(query, maxResults);
 
-        String fileName = "youtube_videos.csv";
-        csvGenerationService.generateCSV(videos, fileName);
+        String tempFileName = "temp.xlsx";
+        excelGenerationService.generateExcel(tempFileName, videos);
 
-        Path filePath = Paths.get(fileName).toAbsolutePath().normalize();
+        Path filePath = Paths.get(tempFileName).toAbsolutePath().normalize();
         Resource resource = new UrlResource(filePath.toUri());
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=videos.xlsx")
                 .body(resource);
     }
 }

@@ -41,11 +41,11 @@ public class YoutubeService {
             Map<String, Object> statistics = (Map<String, Object>) item.get("statistics");
 
             return Map.of(
-                    "Title", (String) snippet.get("title"),
-                    "Published At", (String) snippet.get("publishedAt"),
-                    "Channel Title", (String) snippet.get("channelTitle"),
-                    "View Count", statistics.getOrDefault("viewCount", "0").toString(),
-                    "Like Count", statistics.getOrDefault("likeCount", "0").toString()
+                    "Title", String.valueOf(snippet.getOrDefault("title", "")),
+                    "Published At", String.valueOf(snippet.getOrDefault("publishedAt", "")),
+                    "Channel Title", String.valueOf(snippet.getOrDefault("channelTitle", "")),
+                    "View Count", String.valueOf(statistics.getOrDefault("viewCount", "0")),
+                    "Like Count", String.valueOf(statistics.getOrDefault("likeCount", "0"))
             );
         }).collect(Collectors.toList());
     }
