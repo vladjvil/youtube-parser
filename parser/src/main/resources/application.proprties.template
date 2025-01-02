@@ -1,0 +1,6 @@
+# SPRING APP
+spring.application.name=parser
+
+# YOUTUBE
+youtube.api-key=your_key
+youtube.base-url=https://www.googleapis.com/youtube/v3
