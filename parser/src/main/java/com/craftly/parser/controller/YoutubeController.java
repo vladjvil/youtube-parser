@@ -34,7 +34,8 @@ public class YoutubeController {
             @RequestParam String query,
             @RequestParam(defaultValue = "10") int maxResults
     ) {
-        return ResponseEntity.ok(youTubeService.searchVideosWithStats(query, maxResults));
+        var videos = youTubeService.searchVideosWithStats(query, maxResults);
+        return ResponseEntity.ok(videos);
     }
 
     @GetMapping("/excel")
